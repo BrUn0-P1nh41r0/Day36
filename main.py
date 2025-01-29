@@ -1,3 +1,6 @@
+import requests
+from datetime import datetime, timedelta
+
 STOCK = "TSLA"
 COMPANY_NAME = "Tesla Inc"
 
@@ -5,10 +8,30 @@ STOCK_ENDPOINT = "https://www.alphavantage.co/query"
 NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
 
 
-## STEP 1: Use https://newsapi.org/docs/endpoints/everything
-# When STOCK price increase/decreases by 5% between yesterday and the day before yesterday then print("Get News").
-#HINT 1: Get the closing price for yesterday and the day before yesterday. Find the positive difference between the two prices. e.g. 40 - 20 = -20, but the positive difference is 20.
-#HINT 2: Work out the value of 5% of yerstday's closing stock price. 
+
+parameters = {
+    "function": "TIME_SERIES_DAILY",
+    "symbol": STOCK,
+    "outputsize": "compact",
+    "apikey": STOCK_API_KEY,
+}
+def get_stock():
+    today = datetime.today()
+    yesterday = today - timedelta(days=1)
+    day_before_yesterday = today - timedelta(days=2)
+    yesterday_day = yesterday.strftime("%Y-%m-%d")
+    day_before_day = day_before_yesterday.strftime("%Y-%m-%d")
+
+    stock = requests.get(url=STOCK_ENDPOINT, params=parameters)
+    data = stock.json()
+    day1 = float(data["Time Series (Daily)"][yesterday_day]["4. close"])
+    day2 = float(data["Time Series (Daily)"][day_before_day]["4. close"])
+
+    price_dif = abs(day1 - day2)
+    threshold = 0.05 * day1
+
+    if price_dif >= threshold:
+        return  True
 
 
 
@@ -22,6 +45,12 @@ NEWS_ENDPOINT = "https://newsapi.org/v2/everything"
 # Send a separate message with each article's title and description to your phone number. 
 #HINT 1: Consider using a List Comprehension.
 
+
+
+
+stock_validation = get_stock()
+if stock_validation:
+    print("Get news")
 
 
 #Optional: Format the SMS message like this: 
